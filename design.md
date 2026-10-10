@@ -456,13 +456,17 @@ This living document tracks every 3D asset designed, generated, and refined usin
   - Authentic Hanabishi (four-lobed flower) crest and pine needle accents extracted directly from reference photo `natsume-matcha(2).jpeg`.
   - Radiant Japanese gold leaf/powder: $\text{Base Color} = (0.92, 0.76, 0.38)$, $\text{Metallic} = 0.98$, $\text{Roughness} = 0.22$, tactile raised normal bump ($Strength = 0.055$).
 - **No Text / Label:** The modern paper label and "Natsume" text have been completely removed.
-- **Powder Bed:** Ceremonial green velvet matte ($\text{Roughness} = 0.92$, $\text{Specular} = 0.08$).
+- **Calibrated Powder Bed Texture:**
+  - Standardized sRGB calibrated ceremonial green 2K bitmap texture (`Matcha_Ceremonial_Calibrated_2K.png`).
+  - Solved cross-platform Color Management discrepancy (AgX View Transform in Blender vs Standard sRGB in web/game 3D viewers).
+  - Velvet absorbent matte PBR ($\text{Roughness} = 0.92$, $\text{Metallic} = 0.0$, $\text{Specular} = 0.08$) ensuring identical fresh vibrant green color across Blender, Windows 3D Viewer, Three.js, and external game engines.
 
 ### 3. Strict Single GLB Export
 - **Single GLB Packaging:**
   - Output File: Strictly **ONE single file**:
-    `C:\Users\Pongo\Downloads\3d-asset\matcha-natsume.glb` ($1.93\text{ MB}$).
-  - Self-contained container with all 3 mesh nodes (`Matcha_Natsume_Tin`, `Matcha_Natsume_Powder`, `Matcha_Natsume_Lid`) and embedded textures.
+    `C:\Users\Pongo\Downloads\3d-asset\matcha-natsume.glb`.
+  - Self-contained container with all 3 mesh nodes (`Matcha_Natsume_Tin`, `Matcha_Natsume_Powder`, `Matcha_Natsume_Lid`) and embedded calibrated 2K PBR textures.
+
 
 
 
