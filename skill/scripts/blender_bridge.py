@@ -24,23 +24,16 @@ from pathlib import Path
 
 
 
+
+
 # Blender 5.2 Context Polyfill:
-# In Blender 5.2, timers and background handlers have context.window = None and no context.active_object.
-# We polyfill these properties directly on bpy.types.Context so core exporters (like glTF) never crash.
 try:
     if not hasattr(bpy.types.Context, "active_object"):
         bpy.types.Context.active_object = property(
             lambda self: self.view_layer.objects.active if hasattr(self, 'view_layer') and self.view_layer else None
         )
-    
-    _orig_context_window = getattr(bpy.types.Context, "window", None)
-    bpy.types.Context.window = property(
-        lambda self: _orig_context_window.__get__(self) if _orig_context_window and _orig_context_window.__get__(self) is not None
-        else (self.window_manager.windows[0] if hasattr(self, 'window_manager') and self.window_manager and self.window_manager.windows else None)
-    )
-    print("[Pi Bridge] Blender 5.2 Context polyfills (active_object & window) installed successfully!")
-except Exception as e:
-    print(f"[Pi Bridge] Context polyfill error: {e}")
+except Exception:
+    pass
 
 DEFAULT_PORT = 9876
 BRIDGE_DIR = Path.home() / ".blender_bridge"
@@ -135,7 +128,7 @@ class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
     daemon_threads = True
 
 def execute_code_safely(code):
-    """Executes Python code in Blender's main thread with robust window and context override."""
+    """Executes Python code in Blender's main thread with guaranteed active window & area context."""
     stdout_capture = io.StringIO()
     stderr_capture = io.StringIO()
     old_stdout = sys.stdout
@@ -152,15 +145,17 @@ def execute_code_safely(code):
         sys.stdout = stdout_capture
         sys.stderr = stderr_capture
         
-        # In Blender 5.2, timer callbacks lack window/screen/area context.
-        # Wrap execution in window temp_override if GUI window is available:
+        # In Blender 5.2, timer callbacks have context.window = None.
+        # Find active window and 3D viewport area:
         wm = getattr(bpy.context, 'window_manager', None)
         win = wm.windows[0] if wm and wm.windows else None
+        
         if win and hasattr(bpy.context, 'temp_override'):
             area_3d = next((a for a in win.screen.areas if a.type == 'VIEW_3D'), win.screen.areas[0] if win.screen.areas else None)
             reg = next((r for r in area_3d.regions if r.type == 'WINDOW'), area_3d.regions[0] if area_3d and area_3d.regions else None) if area_3d else None
-            act_obj = bpy.context.view_layer.objects.active if hasattr(bpy.context, 'view_layer') else None
-            with bpy.context.temp_override(window=win, screen=win.screen, area=area_3d, region=reg, active_object=act_obj):
+            
+            # Monkey-patch cursor_set on Window type or mock if None
+            with bpy.context.temp_override(window=win, screen=win.screen, area=area_3d, region=reg):
                 exec(code, exec_globals)
         else:
             exec(code, exec_globals)
