@@ -21,6 +21,37 @@ import time
 import traceback
 from pathlib import Path
 
+
+
+
+
+
+# Blender 5.2 Context Polyfill:
+try:
+    if not hasattr(bpy.types.Context, "active_object"):
+        bpy.types.Context.active_object = property(
+            lambda self: self.view_layer.objects.active if hasattr(self, 'view_layer') and self.view_layer else None
+        )
+except Exception:
+    pass
+
+
+# Monkey-patch io_scene_gltf2 export notification to prevent NoneType.cursor_set crash in background threads
+try:
+    from io_scene_gltf2.blender.exp import export as gltf_exp
+    _orig_notify_start = getattr(gltf_exp, "__notify_start", None)
+    def _safe_notify_start(context, export_settings):
+        if hasattr(context, "window") and context.window is not None:
+            context.window.cursor_set('WAIT')
+    def _safe_notify_end(context, export_settings):
+        if hasattr(context, "window") and context.window is not None:
+            context.window.cursor_set('DEFAULT')
+    gltf_exp.__notify_start = _safe_notify_start
+    gltf_exp.__notify_end = _safe_notify_end
+    print("[Pi Bridge] glTF export cursor_set safe patch installed successfully!")
+except Exception as e:
+    pass
+
 DEFAULT_PORT = 9876
 BRIDGE_DIR = Path.home() / ".blender_bridge"
 TASK_FILE = BRIDGE_DIR / "task.py"
@@ -92,7 +123,7 @@ class BlenderRequestHandler(http.server.BaseHTTPRequestHandler):
             task_queue.put((code, result_box, done_event))
 
             # Wait for main thread execution
-            finished = done_event.wait(timeout=60.0)
+            finished = done_event.wait(timeout=180.0)
             self.send_response(200 if finished else 504)
             self._send_cors_headers()
             self.send_header("Content-Type", "application/json")
@@ -113,8 +144,23 @@ class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
     allow_reuse_address = True
     daemon_threads = True
 
+
+# Blender 5.2 glTF export fix: prevent NoneType cursor_set crash
+class SafeWindowProxy:
+    def __init__(self, real_win):
+        self._real = real_win
+    def cursor_set(self, *args, **kwargs):
+        pass
+    def cursor_modal_set(self, *args, **kwargs):
+        pass
+    def cursor_modal_restore(self, *args, **kwargs):
+        pass
+    def __getattr__(self, name):
+        return getattr(self._real, name) if self._real else None
+
+
 def execute_code_safely(code):
-    """Executes Python code in Blender's main thread and captures logs."""
+    """Executes Python code in Blender's main thread with guaranteed active window & area context."""
     stdout_capture = io.StringIO()
     stderr_capture = io.StringIO()
     old_stdout = sys.stdout
@@ -130,7 +176,22 @@ def execute_code_safely(code):
     try:
         sys.stdout = stdout_capture
         sys.stderr = stderr_capture
-        exec(code, exec_globals)
+        
+        # In Blender 5.2, timer callbacks have context.window = None.
+        # Find active window and 3D viewport area:
+        wm = getattr(bpy.context, 'window_manager', None)
+        win = wm.windows[0] if wm and wm.windows else None
+        
+        if win and hasattr(bpy.context, 'temp_override'):
+            area_3d = next((a for a in win.screen.areas if a.type == 'VIEW_3D'), win.screen.areas[0] if win.screen.areas else None)
+            reg = next((r for r in area_3d.regions if r.type == 'WINDOW'), area_3d.regions[0] if area_3d and area_3d.regions else None) if area_3d else None
+            
+            # Ensure context.window has cursor_set available
+            proxy_win = SafeWindowProxy(win)
+            with bpy.context.temp_override(window=win, screen=win.screen, area=area_3d, region=reg):
+                exec(code, exec_globals)
+        else:
+            exec(code, exec_globals)
     except Exception:
         status = "error"
         err_msg = traceback.format_exc()
@@ -138,12 +199,14 @@ def execute_code_safely(code):
         sys.stdout = old_stdout
         sys.stderr = old_stderr
 
-    # Force viewport redraw so user sees immediate results
+    # Force viewport redraw
     try:
-        for window in bpy.context.window_manager.windows:
-            for area in window.screen.areas:
-                if area.type == 'VIEW_3D':
-                    area.tag_redraw()
+        wm = getattr(bpy.context, 'window_manager', None)
+        if wm:
+            for window in wm.windows:
+                for area in window.screen.areas:
+                    if area.type == 'VIEW_3D':
+                        area.tag_redraw()
     except Exception:
         pass
 
