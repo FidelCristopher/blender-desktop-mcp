@@ -35,6 +35,23 @@ try:
 except Exception:
     pass
 
+
+# Monkey-patch io_scene_gltf2 export notification to prevent NoneType.cursor_set crash in background threads
+try:
+    from io_scene_gltf2.blender.exp import export as gltf_exp
+    _orig_notify_start = getattr(gltf_exp, "__notify_start", None)
+    def _safe_notify_start(context, export_settings):
+        if hasattr(context, "window") and context.window is not None:
+            context.window.cursor_set('WAIT')
+    def _safe_notify_end(context, export_settings):
+        if hasattr(context, "window") and context.window is not None:
+            context.window.cursor_set('DEFAULT')
+    gltf_exp.__notify_start = _safe_notify_start
+    gltf_exp.__notify_end = _safe_notify_end
+    print("[Pi Bridge] glTF export cursor_set safe patch installed successfully!")
+except Exception as e:
+    pass
+
 DEFAULT_PORT = 9876
 BRIDGE_DIR = Path.home() / ".blender_bridge"
 TASK_FILE = BRIDGE_DIR / "task.py"
@@ -127,6 +144,21 @@ class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
     allow_reuse_address = True
     daemon_threads = True
 
+
+# Blender 5.2 glTF export fix: prevent NoneType cursor_set crash
+class SafeWindowProxy:
+    def __init__(self, real_win):
+        self._real = real_win
+    def cursor_set(self, *args, **kwargs):
+        pass
+    def cursor_modal_set(self, *args, **kwargs):
+        pass
+    def cursor_modal_restore(self, *args, **kwargs):
+        pass
+    def __getattr__(self, name):
+        return getattr(self._real, name) if self._real else None
+
+
 def execute_code_safely(code):
     """Executes Python code in Blender's main thread with guaranteed active window & area context."""
     stdout_capture = io.StringIO()
@@ -154,7 +186,8 @@ def execute_code_safely(code):
             area_3d = next((a for a in win.screen.areas if a.type == 'VIEW_3D'), win.screen.areas[0] if win.screen.areas else None)
             reg = next((r for r in area_3d.regions if r.type == 'WINDOW'), area_3d.regions[0] if area_3d and area_3d.regions else None) if area_3d else None
             
-            # Monkey-patch cursor_set on Window type or mock if None
+            # Ensure context.window has cursor_set available
+            proxy_win = SafeWindowProxy(win)
             with bpy.context.temp_override(window=win, screen=win.screen, area=area_3d, region=reg):
                 exec(code, exec_globals)
         else:
