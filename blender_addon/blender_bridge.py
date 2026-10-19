@@ -52,6 +52,40 @@ try:
 except Exception as e:
     pass
 
+
+# Blender 5.2 glTF export safe patch:
+try:
+    from io_scene_gltf2.blender.exp import tree as gltf_tree
+    _orig_vtree_construct = gltf_tree.VTree.construct
+    def _safe_vtree_construct(self, blender_scene):
+        # Prevent AttributeError: 'NoneType' object has no attribute 'scene' when bpy.context.window is None
+        if hasattr(bpy.context, 'window') and bpy.context.window is not None:
+            bpy.context.window.scene = blender_scene
+        elif hasattr(bpy.context, 'window_manager') and bpy.context.window_manager.windows:
+            bpy.context.window_manager.windows[0].scene = blender_scene
+            
+        # Ensure active_object check is safe
+        act = getattr(bpy.context, 'active_object', None) or (bpy.context.view_layer.objects.active if hasattr(bpy.context, 'view_layer') else None)
+        if act and act.mode != 'OBJECT':
+            bpy.ops.object.mode_set(mode='OBJECT')
+
+        depsgraph = bpy.context.evaluated_depsgraph_get()
+        # Call remaining parts without re-triggering bpy.context.window.scene
+        # We can bypass line 140 by mocking bpy.context.window during the call!
+    
+    # Even simpler & 100% robust: wrap VTree.construct with a mock window or context override:
+    def _robust_construct_wrapper(self, blender_scene):
+        win = bpy.context.window_manager.windows[0] if bpy.context.window_manager.windows else None
+        if win and bpy.context.window is None:
+            with bpy.context.temp_override(window=win):
+                return _orig_vtree_construct(self, blender_scene)
+        return _orig_vtree_construct(self, blender_scene)
+
+    gltf_tree.VTree.construct = _robust_construct_wrapper
+    print("[Pi Bridge] glTF VTree.construct safe wrapper installed successfully!")
+except Exception as e:
+    print(f"[Pi Bridge] glTF patch notice: {e}")
+
 DEFAULT_PORT = 9876
 BRIDGE_DIR = Path.home() / ".blender_bridge"
 TASK_FILE = BRIDGE_DIR / "task.py"
