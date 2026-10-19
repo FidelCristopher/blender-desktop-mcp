@@ -467,6 +467,29 @@ This living document tracks every 3D asset designed, generated, and refined usin
     `C:\Users\Pongo\Downloads\3d-asset\matcha-natsume.glb` ($6.18\text{ MB}$).
   - Self-contained container with all 3 mesh nodes (`Matcha_Natsume_Tin`, `Matcha_Natsume_Powder`, `Matcha_Natsume_Lid`) and embedded calibrated 2K PBR textures.
 
+---
+
+## Phase 3.5 & Core Stability: Blender 5.2 Context & Bridge Deadlock Fix
+
+### Root Cause Analysis of Mid-Process Restarts
+When generating complex 3D assets with automatic GLB exports (`bpy.ops.export_scene.gltf`) or UV projections, Blender 5.2 LTS exhibited recurring modal/thread freezes. This was caused by two breaking changes in the Blender 5.2 internal Python API:
+1. **Context Window Invalidation in Timer Loops:**
+   - In background timer callbacks (`bpy.app.timers`), `bpy.context.window` defaults to `None`.
+   - The native Blender 5.2 glTF export module (`io_scene_gltf2`) attempts to call `context.window.cursor_set('WAIT')`, resulting in `AttributeError: 'NoneType' object has no attribute 'cursor_set'` and halting execution.
+2. **Deprecation of `context.active_object`:**
+   - In Blender 5.2, `context.active_object` was removed in favor of `context.view_layer.objects.active`.
+   - Legacy add-on routines referencing `context.active_object` fail with `AttributeError: 'Context' object has no attribute 'active_object'`, deadlocking the execution thread and triggering external watchdog process terminations.
+
+### Architectural Fix in `blender_bridge.py`
+To ensure 100% non-intrusive, crash-free, and restart-free execution during asset generation:
+1. **`bpy.types.Context` Polyfills:**
+   - Injected dynamic property descriptors for `Context.active_object` mapping safely to `self.view_layer.objects.active`.
+   - Injected fallback property for `Context.window` referencing `self.window_manager.windows[0]` when evaluated in timer/background threads.
+2. **Window & Region `temp_override` Wrapping:**
+   - All dispatched scripts inside `execute_code_safely()` are now encapsulated within `bpy.context.temp_override(window=win, screen=win.screen, area=area_3d, region=reg, active_object=act_obj)`.
+   - Operators (`export_scene.gltf`, `uv.smart_project`, `render.opengl`) now inherit a complete GUI context without freezing or requiring application restarts.
+
+
 
 
 
