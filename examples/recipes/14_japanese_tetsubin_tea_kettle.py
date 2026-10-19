@@ -4,9 +4,9 @@ Description: Authentic Traditional Japanese Tetsubin (Nanbu Cast Iron Tea Kettle
 Features:
 - Cast-iron pot body with realistic wall thickness (~3.5mm) and hollow pouring spout
 - Stepped lid (futa) with traditional acorn knob (tsumami)
-- Overhead bail handle (tsuru) oriented inline with the spout axis (front anchor above spout, rear anchor behind)
+- Graceful low-profile overhead bail handle (tsuru) oriented inline with the spout axis (front anchor above spout, rear anchor behind)
 - Tactile Arare (hailstone) studs and sand-cast iron hada texture baked to 2K PBR
-- Pure velvety Hitam Dove (Matte Black, Roughness 0.92, Metallic 0.02) finish
+- Velvety Hitam Dove (Matte Black, Roughness 0.92, Metallic 0.02) finish
 - Single GLB export container for interactive WebGL / 3D web experiences
 """
 
