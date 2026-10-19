@@ -21,6 +21,15 @@ import time
 import traceback
 from pathlib import Path
 
+
+# Blender 5.2 Context monkey-patch: restore context.active_object property
+try:
+    if not hasattr(bpy.types.Context, "active_object"):
+        bpy.types.Context.active_object = property(lambda self: self.view_layer.objects.active if hasattr(self, 'view_layer') and self.view_layer else None)
+        print("[Pi Bridge] Blender 5.2 Context.active_object polyfill installed successfully!")
+except Exception as e:
+    print(f"[Pi Bridge] Polyfill error: {e}")
+
 DEFAULT_PORT = 9876
 BRIDGE_DIR = Path.home() / ".blender_bridge"
 TASK_FILE = BRIDGE_DIR / "task.py"
@@ -114,7 +123,7 @@ class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
     daemon_threads = True
 
 def execute_code_safely(code):
-    """Executes Python code in Blender's main thread and captures logs."""
+    """Executes Python code in Blender's main thread with full window/context override."""
     stdout_capture = io.StringIO()
     stderr_capture = io.StringIO()
     old_stdout = sys.stdout
@@ -130,14 +139,14 @@ def execute_code_safely(code):
     try:
         sys.stdout = stdout_capture
         sys.stderr = stderr_capture
-        # In Blender 5.2, timer callbacks don't have default window/area context.
-        # Wrap execution in window temp_override if available:
+        
+        # In Blender 5.2, timer callbacks have context.window = None.
+        # Ensure context.window and context.screen are always bound:
         win = bpy.context.window_manager.windows[0] if bpy.context.window_manager.windows else None
         if win:
-            area_3d = next((a for a in win.screen.areas if a.type == 'VIEW_3D'), None)
-            reg_3d = next((r for r in area_3d.regions if r.type == 'WINDOW'), None) if area_3d else None
-            act_obj = bpy.context.view_layer.objects.active if hasattr(bpy.context, 'view_layer') else None
-            with bpy.context.temp_override(window=win, screen=win.screen, area=area_3d, region=reg_3d, active_object=act_obj):
+            area_3d = next((a for a in win.screen.areas if a.type == 'VIEW_3D'), win.screen.areas[0] if win.screen.areas else None)
+            reg = next((r for r in area_3d.regions if r.type == 'WINDOW'), area_3d.regions[0] if area_3d and area_3d.regions else None) if area_3d else None
+            with bpy.context.temp_override(window=win, screen=win.screen, area=area_3d, region=reg):
                 exec(code, exec_globals)
         else:
             exec(code, exec_globals)
@@ -148,7 +157,7 @@ def execute_code_safely(code):
         sys.stdout = old_stdout
         sys.stderr = old_stderr
 
-    # Force viewport redraw so user sees immediate results
+    # Force viewport redraw
     try:
         for window in bpy.context.window_manager.windows:
             for area in window.screen.areas:
