@@ -615,3 +615,13 @@ To ensure 100% non-intrusive, crash-free, and restart-free execution during asse
 - **Category:** Utensils
 - **Source:** Verified Recipe Library (`examples/recipes/utensils/japanese_matcha_sifter_furui_2k.py`)
 - **Notes:** 2K Production-Grade Japanese Matcha Sifter (Furui / Chakoshi) with Bevel 3 segments on rim, ferrule, and hook, ultra-fine wire mesh dome, and turned dark walnut handle.
+
+
+---
+
+## Asset Log: Barista Milk Frothing Pitcher 2K
+
+- **Date:** 2026-10-21
+- **Category:** Utensils
+- **Source:** Verified Recipe Library (`examples/recipes/utensils/barista_milk_frothing_pitcher_2k.py`)
+- **Notes:** 2K Production-Grade Barista Stainless Steel Milk Frothing Pitcher (350ml / 12oz) with precision V-spout, welded flat-ribbon handle, and brushed 304 steel PBR finish.
