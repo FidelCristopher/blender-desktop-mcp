@@ -595,3 +595,13 @@ To ensure 100% non-intrusive, crash-free, and restart-free execution during asse
 - **Output File:** `C:\Users\Pongo\Downloads\3d-asset\milk-pitcher.glb` ($1.27\text{ MB}$).
 - **Showcase Replica:** `C:\Users\Pongo\matcha-showcase\assets\models\milk-pitcher.glb`.
 - **Verified Recipe:** `examples/recipes/20_barista_milk_frothing_pitcher.py`.
+
+
+---
+
+## Asset Log: Japanese Obon Tea Tray 2K
+
+- **Date:** 2026-10-21
+- **Category:** Tableware
+- **Source:** Verified Recipe Library (`examples/recipes/tableware/japanese_obon_tea_tray_2k.py`)
+- **Notes:** 2K Production-Grade Japanese Round Lacquered Tea Tray (Maru-bon / Obon) with Bevel 3 segments, Kuro-Urushi satin black body, Shu-fuchi vermilion red rim, and center Uzumaki spiral ripple.
