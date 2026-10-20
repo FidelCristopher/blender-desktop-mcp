@@ -501,3 +501,66 @@ To ensure 100% non-intrusive, crash-free, and restart-free execution during asse
 
 
 
+
+
+---
+
+## Asset Log #12: Traditional Japanese Round Lacquered Tea Tray (Maru-bon / Obon - 丸盆)
+**Timestamp:** 2026-10-21 00:20:00  
+**Category:** Japanese Tableware / Tea Ceremony Serving Tray (Obon)  
+**Source:** Reference Image (`/mnt/c/Users/Pongo/Downloads/obon.jpg` / `C:\Users\Pongo\Downloads\obon.jpg`)  
+**Asset Name in Scene:** `Japanese_Obon_Tray`
+
+### 1. Geometric Architecture & Physical Dimensions
+- **Standard Tea Ceremony Scale (Shaku Maru-bon):**
+  - **Outer Diameter:** $30.0\text{ cm}$ ($R = 0.150\text{ m}$)
+  - **Total Height:** $2.8\text{ cm}$ ($Z = 0.028\text{ m}$)
+  - **Interior Serving Floor:** Flat circular surface ($R \approx 0.138\text{ m}$, Floor elevation $Z = 0.008\text{ m}$)
+  - **Recessed Foot Ring (Kodai):** Subtle $2.5\text{ mm}$ bottom recess for stable tabletop seating.
+- **Iconic Archimedean Spiral Ripple (Uzumaki / Naruto-maki Groove):**
+  - Tactile concentric spiral groove carved into the center floor ($R < 0.052\text{ m}$) using micro-vertex deformation math $\Delta z = \sin(r \cdot 320 - \theta) \cdot 0.35\text{ mm} \cdot \text{falloff}$.
+- **Modifiers & Shading:** Subdivision Surface (`Subsurf`) Level 2 with full smooth polygon shading.
+
+### 2. Shader & PBR Material Specification
+- **Material Name:** `M_Japanese_Obon_Urushi`
+- **Kuro-Urushi Body (Satin Black Lacquer):**
+  - Base Color: Deep charcoal black `#18181A` with subtle organic wood pore undertone.
+  - Wood Grain Bump: Horizontally stretched procedural noise ($Scale: 180.0, Detail: 6.0$) simulating turned hardwood grain pores.
+  - Surface Finish: Satin lacquer sheen ($\text{Roughness} = 0.36, \text{Specular} = 0.58$).
+- **Shu-fuchi Vermilion Red Rim Crest:**
+  - Traditional vermilion/Akane red lacquer line (`RGB: 0.64, 0.15, 0.09`) masking the upper rim crest ($Z > 0.0264\text{ m}, R > 0.141\text{ m}$).
+
+### 3. Master GLB Container
+- **Output File:** `C:\Users\Pongo\Downloads\3d-asset\obon.glb` ($1.00\text{ MB}$).
+- **Showcase Replica:** `C:\Users\Pongo\matcha-showcase\assets\models\obon.glb`.
+- **Verified Recipe:** `examples/recipes/18_traditional_japanese_obon_tea_tray.py`.
+
+---
+
+## Asset Log #13: Artisanal Japanese Handheld Matcha Sifter / Strainer (Furui / Chakoshi - 茶漉し)
+**Timestamp:** 2026-10-21 00:25:00  
+**Category:** Japanese Tea Ceremony Utensil & Clump Prevention Sifter  
+**Source:** Reference Image (`/mnt/c/Users/Pongo/Downloads/furui.png` / `C:\Users\Pongo\Downloads\furui.png`)  
+**Asset Name in Scene:** `Matcha_Furui_Sifter`
+
+### 1. Geometric Architecture & Components
+- **Stainless Steel Sifter Head (`Sifter_Steel_Rim` & `Sifter_Wire_Mesh_Bowl`):**
+  - Double-bead rolled collar ring ($7.8\text{ cm}$ outer diameter, $R = 0.039\text{ m}$).
+  - Concave spherical woven wire mesh bowl ($1.6\text{ cm}$ depth, $R = 0.0365\text{ m}$).
+- **Bowl Resting Ear Hook (`Sifter_Rest_Hook`):**
+  - U-shaped rounded wire loop ($1.4\text{ cm}$ span) opposite the handle to rest securely on Chawan rims.
+- **Metal Shank & Stepped Ferrule Collar (`Handle_Metal_Shank`, `Handle_Metal_Ferrule`):**
+  - Chrome steel rod ($2.4\text{ cm}$ length) and stepped collar cap anchoring into the handle.
+- **Ergonomic Turned Dark Walnut Handle (`Sifter_Walnut_Handle`):**
+  - Classic spindle contour ($11.5\text{ cm}$ length): narrow collar ($R = 0.72\text{ cm}$), swelling to ergonomic grip ($R = 1.25\text{ cm}$), ending in a rounded bulbous pommel.
+  - Overall tool length: $22.5\text{ cm}$ ($0.225\text{ m}$).
+
+### 2. Shader & PBR Material Specification
+- **Polished Stainless Steel (`M_Polished_Stainless_Steel`):** Chrome sheen ($\text{Metallic} = 0.98, \text{Roughness} = 0.12, \text{Base Color} = (0.90, 0.91, 0.92)$).
+- **Ultra-Fine Woven Wire Mesh (`M_Stainless_Wire_Mesh`):** Procedural orthogonal wave normal bump simulating high-mesh count twill wire weave.
+- **Artisanal Walnut Wood (`M_Walnut_Handle_Wood`):** Rich warm walnut brown ($\text{Base Color} = (0.16, 0.08, 0.04)$ to $(0.34, 0.18, 0.10)$), hand-rubbed oil sheen ($\text{Roughness} = 0.40$), and longitudinal grain pores.
+
+### 3. Master GLB Container
+- **Output File:** `C:\Users\Pongo\Downloads\3d-asset\furui.glb` ($269\text{ KB}$).
+- **Showcase Replica:** `C:\Users\Pongo\matcha-showcase\assets\models\furui.glb`.
+- **Verified Recipe:** `examples/recipes/19_artisanal_japanese_matcha_sifter_furui.py`.
