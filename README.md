@@ -80,6 +80,8 @@ The server exposes the following tools to connected AI models:
 | `pick_image_from_dialog` | none | Launches a native operating system File Explorer dialog window allowing the user to select a 2D reference image. |
 | `get_image_from_clipboard` | none | Captures an image from the system clipboard (e.g., from Snipping Tool or screenshot) and saves it to a local temporary path. |
 | `get_design_guidelines` | none | Retrieves verified 3D asset architecture rules, lathe specifications, and PBR shader parameters from `design.md`. |
+| `search_recipe_library` | `query: string`, `category?: string` | Searches verified 3D recipes by keyword. If no match exists, automatically returns component blocks and universal 3D quality standards. |
+| `save_verified_recipe` | `asset_name: string`, `category: string`, `code: string`, `notes?: string` | Permanently saves a verified Blender Python script to the modular recipe library and logs it to `design.md` for continuous self-learning. |
 
 The server also provides:
 - **Resource:** `blender://design-guidelines` providing full access to `design.md`.
