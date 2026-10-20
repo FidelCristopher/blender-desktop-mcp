@@ -605,3 +605,13 @@ To ensure 100% non-intrusive, crash-free, and restart-free execution during asse
 - **Category:** Tableware
 - **Source:** Verified Recipe Library (`examples/recipes/tableware/japanese_obon_tea_tray_2k.py`)
 - **Notes:** 2K Production-Grade Japanese Round Lacquered Tea Tray (Maru-bon / Obon) with Bevel 3 segments, Kuro-Urushi satin black body, Shu-fuchi vermilion red rim, and center Uzumaki spiral ripple.
+
+
+---
+
+## Asset Log: Japanese Matcha Sifter Furui 2K
+
+- **Date:** 2026-10-21
+- **Category:** Utensils
+- **Source:** Verified Recipe Library (`examples/recipes/utensils/japanese_matcha_sifter_furui_2k.py`)
+- **Notes:** 2K Production-Grade Japanese Matcha Sifter (Furui / Chakoshi) with Bevel 3 segments on rim, ferrule, and hook, ultra-fine wire mesh dome, and turned dark walnut handle.
