@@ -5,27 +5,24 @@ description: Live Blender 3D desktop bridge. On activation or start, ALWAYS STOP
 
 # Blender Desktop Bridge Skill
 
-## ABSOLUTE CONTEXT-RESET RULE: TREAT EVERY INVOCATION AS A FRESH BLANK-SLATE!
+## ASSET REGENERATION & DUPLICATE REFERENCE VALIDATION RULE
 
-**CRITICAL OVERRIDE INSTRUCTION FOR THE AGENT (APPLIES TO FIRST RUN AND ANY RE-INVOCATION):**
-Whenever this skill is triggered, invoked (e.g. via `/skill blender-bridge`, `/skill gemini-bridge`, or `/skill gemini-desktop-bridge`), or selected at ANY point—whether at the very beginning of a session or in the middle of an ongoing conversation:
+**VALIDATION & TRIAGE INSTRUCTION FOR REGENERATIONS AND RE-INVOCATIONS:**
+Whenever an asset, reference image, or file path (e.g., `furui.png`) is detected as having been generated or selected previously:
 
-1. **FORBIDDEN: DO NOT INHERIT OR ITERATE ON PREVIOUS CHAT CONTEXT:**
-   - **Completely IGNORE any previous 3D model, object, task, or render discussed earlier in the chat history.**
-   - **DO NOT** continue modifying, refining, or editing past objects (do NOT touch past chairs, drinks, fruits, or previous models).
-   - **DO NOT** read old preview files (e.g. `preview.png`), do NOT write refinement scripts, and do NOT execute `send_to_blender.py` right away.
+1. **NEVER UNILATERALLY REJECT OR DEFLECT:**
+   - Do NOT assume the user selected the file by mistake.
+   - Do NOT force the user to pick a different image if their intention is to regenerate, upgrade, or rebuild the current asset with updated rules.
 
-2. **MANDATORY: ALWAYS RESET AND PRESENT THE 3 INPUT OPTIONS:**
-   - Every single time `/skill` is invoked, treat it as a brand-new, fresh interaction from scratch.
-   - Your VERY FIRST AND ONLY response to the user must be to STOP immediately and present the 3 input options:
+2. **IMMEDIATE REGENERATION ON USER REQUEST:**
+   - If the user explicitly states "generate ulang", "rebuild", "regenerate", or "recreate with new rules", **PROCEED IMMEDIATELY** to rebuild the 3D model from scratch in Blender using the latest 2K PBR production standards without redundant confirmation questions.
 
-   "Hello! Blender Desktop Bridge is active. How would you like to provide the reference for the new 3D model?
-   1. **Pick Image from Computer (File Explorer)**: Opens a dialog window to select a reference image.
-   2. **Enter Image File Path**: Enter the direct file path to an image (e.g., `C:\Users\...\image.png`).
-   3. **Text Description / Prompt**: Describe directly what 3D object you would like to create."
-
-3. **WAIT FOR EXPLICIT USER RESPONSE:**
-   - You MUST wait for the user to choose option 1, 2, or 3 before generating any code, writing any file, or touching Blender.
+3. **CLEAR TRIAGE WHEN INTENT IS UNSPECIFIED:**
+   - If the user re-selects an existing image or requests a previously created asset without specifying whether to regenerate or replace it, present this clear 2-option choice:
+     "The selected reference image/asset (`[filename]`) was previously generated.
+      Would you like to:
+      1. **Regenerate / Rebuild Asset**: Recreate this 3D model from scratch using the latest 2K PBR production quality rules.
+      2. **Change / Switch 3D Asset**: Pick a new reference image from File Explorer, clipboard, or provide a new text description."
 
 ## How the Bridge Works
 

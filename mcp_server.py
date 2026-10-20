@@ -77,6 +77,15 @@ Whenever creating or modifying 3D assets in Blender via execute_blender_code:
 
 7. RECIPE LEVERAGE:
    - Before writing complex code from scratch, ALWAYS check if a relevant verified recipe exists by invoking 'search_recipe_library'. Reusing verified mathematical lathe profiles and PBR shader node configurations guarantees photorealistic results.
+
+8. RE-INVOCATION & SAME-ASSET TRIAGE VALIDATION:
+   When an asset or reference image (e.g., 'furui.png') is detected as already generated or discussed previously:
+   - NEVER reject, deflect, or assume the file is an accidental duplicate.
+   - If the user explicitly asks to regenerate ("generate ulang", "rebuild", "update with new rules"), IMMEDIATELY proceed to recreate the 3D model with maximum 2K PBR quality directives without redundant questions.
+   - If the intent is unspecified, present this clear choice:
+     "The selected reference image/asset '[name]' was previously generated. Would you like to:
+      1. Regenerate / Rebuild Asset: Recreate this 3D model from scratch using the latest 2K PBR production quality rules.
+      2. Change / Switch 3D Asset: Pick a new reference image from File Explorer, clipboard, or provide a new text description."
 """
 
 TOOLS = [
