@@ -625,3 +625,13 @@ To ensure 100% non-intrusive, crash-free, and restart-free execution during asse
 - **Category:** Utensils
 - **Source:** Verified Recipe Library (`examples/recipes/utensils/barista_milk_frothing_pitcher_2k.py`)
 - **Notes:** 2K Production-Grade Barista Stainless Steel Milk Frothing Pitcher (350ml / 12oz) with precision V-spout, welded flat-ribbon handle, and brushed 304 steel PBR finish.
+
+
+---
+
+## Asset Log: Japanese Spiral Bar Spoon 2K
+
+- **Date:** 2026-10-21
+- **Category:** Tableware
+- **Source:** Verified Recipe Library (`examples/recipes/tableware/japanese_spiral_bar_spoon_2k.py`)
+- **Notes:** 2K Production-Grade Japanese Barista Teardrop Spiral Bar Spoon (30cm) with 18.5 helical turns, weighted bullet tip, and mirror chrome steel PBR finish.
