@@ -1,28 +1,49 @@
 #!/usr/bin/env bash
 set -e
 
-SKILL_NAME="blender-bridge"
-PI_SKILLS_DIR="$HOME/.pi/agent/skills/$SKILL_NAME"
-
-echo "============================================="
-echo "Installing Pi Desktop Blender Bridge Skill"
-echo "============================================="
-
-# Create skills directory
-mkdir -p "$PI_SKILLS_DIR/scripts"
-
-# Copy skill files
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cp "$SCRIPT_DIR/skill/SKILL.md" "$PI_SKILLS_DIR/SKILL.md"
-cp "$SCRIPT_DIR/skill/scripts/send_to_blender.py" "$PI_SKILLS_DIR/scripts/send_to_blender.py"
-cp "$SCRIPT_DIR/skill/scripts/pick_image.py" "$PI_SKILLS_DIR/scripts/pick_image.py"
-chmod +x "$PI_SKILLS_DIR/scripts/send_to_blender.py"
-chmod +x "$PI_SKILLS_DIR/scripts/pick_image.py"
+MCP_CONFIG="$HOME/.pi/agent/mcp.json"
 
-echo "[OK] Skill installed successfully to: $PI_SKILLS_DIR"
-echo ""
-echo "Quick Start:"
-echo "1. Open Blender Desktop"
-echo "2. In Blender, go to Scripting tab, open 'blender_addon/blender_bridge.py', and click 'Run Script'"
-echo "3. In Pi, just ask: 'Create a low poly car in Blender'!"
+echo "============================================="
+echo "Installing Blender Desktop Bridge MCP Server"
+echo "============================================="
+
+chmod +x "$SCRIPT_DIR/mcp_server.py"
+chmod +x "$SCRIPT_DIR/skill/scripts/send_to_blender.py"
+chmod +x "$SCRIPT_DIR/skill/scripts/pick_image.py"
+
+# Configure in Pi Agent MCP configuration if available
+if [ -d "$HOME/.pi/agent" ]; then
+    mkdir -p "$HOME/.pi/agent"
+    python3 -c "
+import json, os
+mcp_file = '$MCP_CONFIG'
+config = {'mcpServers': {}}
+if os.path.exists(mcp_file):
+    try:
+        with open(mcp_file, 'r') as f:
+            config = json.load(f)
+    except Exception:
+        pass
+if 'mcpServers' not in config:
+    config['mcpServers'] = {}
+
+config['mcpServers']['blender-bridge'] = {
+    'command': 'python3',
+    'args': ['$SCRIPT_DIR/mcp_server.py'],
+    'exposure': 'direct',
+    'description': 'Blender Desktop Bridge MCP server for controlling Blender and generating 3D assets'
+}
+
+with open(mcp_file, 'w') as f:
+    json.dump(config, f, indent=2)
+print('[OK] Registered blender-bridge in ' + mcp_file)
+"
+fi
+
+echo "============================================="
+echo "Installation complete."
+echo "1. Start Blender Desktop"
+echo "2. Open blender_addon/blender_bridge.py in Blender's Scripting workspace and click Run Script"
+echo "3. Use with any MCP client (Pi Agent, Claude Desktop, Cursor, Antigravity IDE)"
 echo "============================================="

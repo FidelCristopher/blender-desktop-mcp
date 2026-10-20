@@ -1,10 +1,10 @@
 bl_info = {
-    "name": "Pi Desktop Blender Bridge",
+    "name": "Blender MCP Desktop Bridge",
     "author": "Fidel Cristopher",
     "version": (1, 0, 0),
     "blender": (4, 0, 0),
-    "location": "View3D > Sidebar (N) > Pi Bridge / Scripting",
-    "description": "Live bidirectional bridge between Pi Coding Agent and Blender desktop",
+    "location": "View3D > Sidebar (N) > MCP Bridge / Scripting",
+    "description": "Live bidirectional bridge between Model Context Protocol (MCP) clients and Blender desktop",
     "category": "Development",
 }
 
@@ -48,7 +48,7 @@ try:
             context.window.cursor_set('DEFAULT')
     gltf_exp.__notify_start = _safe_notify_start
     gltf_exp.__notify_end = _safe_notify_end
-    print("[Pi Bridge] glTF export cursor_set safe patch installed successfully!")
+    print("[Blender MCP Bridge] glTF export cursor_set safe patch installed successfully!")
 except Exception as e:
     pass
 
@@ -82,9 +82,9 @@ try:
         return _orig_vtree_construct(self, blender_scene)
 
     gltf_tree.VTree.construct = _robust_construct_wrapper
-    print("[Pi Bridge] glTF VTree.construct safe wrapper installed successfully!")
+    print("[Blender MCP Bridge] glTF VTree.construct safe wrapper installed successfully!")
 except Exception as e:
-    print(f"[Pi Bridge] glTF patch notice: {e}")
+    print(f"[Blender MCP Bridge] glTF patch notice: {e}")
 
 DEFAULT_PORT = 9876
 BRIDGE_DIR = Path.home() / ".blender_bridge"
@@ -266,7 +266,7 @@ def bridge_timer_loop():
         except queue.Empty:
             break
         except Exception as e:
-            print(f"[Pi Bridge] HTTP task error: {e}")
+            print(f"[Blender MCP Bridge] HTTP task error: {e}")
 
     # 2. Process tasks from File Watcher fallback (~/.blender_bridge/task.py)
     try:
@@ -283,16 +283,16 @@ def bridge_timer_loop():
                 try:
                     RESULT_FILE.write_text(json.dumps(res, indent=2), encoding="utf-8")
                 except Exception as e:
-                    print(f"[Pi Bridge] Failed to write result.json: {e}")
+                    print(f"[Blender MCP Bridge] Failed to write result.json: {e}")
     except Exception as e:
-        print(f"[Pi Bridge] File watcher error: {e}")
+        print(f"[Blender MCP Bridge] File watcher error: {e}")
 
     return 0.1 # Repeat every 100ms
 
 def start_bridge(port=DEFAULT_PORT):
     global server_instance, server_thread, is_running
     if is_running:
-        print("[Pi Bridge] Already running.")
+        print("[Blender MCP Bridge] Already running.")
         return
 
     ensure_bridge_dir()
@@ -303,13 +303,13 @@ def start_bridge(port=DEFAULT_PORT):
         server_thread = threading.Thread(target=server_instance.serve_forever, daemon=True)
         server_thread.start()
         print(f"==================================================")
-        print(f"[Pi Bridge] Active & Listening!")
+        print(f"[Blender MCP Bridge] Active & Listening!")
         print(f"HTTP Endpoint: http://localhost:{port}/run")
         print(f"File Watcher: {BRIDGE_DIR}")
         print(f"==================================================")
     except Exception as e:
-        print(f"[Pi Bridge] WARNING: HTTP Server could not bind port {port}: {e}")
-        print(f"[Pi Bridge] File Watcher fallback remains ACTIVE on {BRIDGE_DIR}")
+        print(f"[Blender MCP Bridge] WARNING: HTTP Server could not bind port {port}: {e}")
+        print(f"[Blender MCP Bridge] File Watcher fallback remains ACTIVE on {BRIDGE_DIR}")
 
     # Register main thread timer
     if not bpy.app.timers.is_registered(bridge_timer_loop):
@@ -329,15 +329,15 @@ def stop_bridge():
 
     if bpy.app.timers.is_registered(bridge_timer_loop):
         bpy.app.timers.unregister(bridge_timer_loop)
-    print("[Pi Bridge] Stopped.")
+    print("[Blender MCP Bridge] Stopped.")
 
 # UI Panel inside 3D Viewport Sidebar (N-Panel)
 class VIEW3D_PT_pi_bridge(bpy.types.Panel):
-    bl_label = "Pi Agent Bridge"
+    bl_label = "Blender MCP Bridge"
     bl_idname = "VIEW3D_PT_pi_bridge"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_category = 'Pi Bridge'
+    bl_category = 'MCP Bridge'
 
     def draw(self, context):
         layout = self.layout
@@ -351,14 +351,14 @@ class VIEW3D_PT_pi_bridge(bpy.types.Panel):
 
 class WM_OT_pi_bridge_start(bpy.types.Operator):
     bl_idname = "wm.pi_bridge_start"
-    bl_label = "Start Pi Bridge"
+    bl_label = "Start MCP Bridge"
     def execute(self, context):
         start_bridge()
         return {'FINISHED'}
 
 class WM_OT_pi_bridge_stop(bpy.types.Operator):
     bl_idname = "wm.pi_bridge_stop"
-    bl_label = "Stop Pi Bridge"
+    bl_label = "Stop MCP Bridge"
     def execute(self, context):
         stop_bridge()
         return {'FINISHED'}

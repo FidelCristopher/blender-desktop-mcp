@@ -1,33 +1,40 @@
-# Gemini Desktop Blender Bridge (Pi Agent Skill)
+# Blender Desktop Bridge MCP Server
 
-[![Blender](https://img.shields.io/badge/Blender-4.x%20%7C%205.x-E87D0D?logo=blender&logoColor=white)](https://www.blender.org/)
-[![Pi Agent](https://img.shields.io/badge/Agent-Pi%20Coding%20Agent-6C5CE7)](https://github.com/earendil-works/pi)
-[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://python.org)
+A bidirectional Model Context Protocol (MCP) server that connects AI models (Gemini, Claude, GPT, Antigravity, and local LLMs) directly to an active Blender Desktop application.
 
-A real-time bidirectional bridge connecting the **Pi Terminal Coding Agent (powered by Gemini / LLM)** directly to an active **Blender Desktop** application.
-
-Simply prompt the agent in your Pi terminal, such as *"Create a low-poly red sports car in Blender"*, and the 3D model will be generated and updated instantly in your Blender 3D Viewport.
+The server allows AI coding agents and desktop assistants to inspect the Blender scene, open native file dialogs for 2D reference images, capture clipboard images, execute Python (bpy) scripts, and generate high-fidelity 3D assets with real-time viewport updates.
 
 ---
 
-## System Architecture
+## Architecture Overview
 
 ```
 +-----------------------------------------------------------------+
-|                    Terminal / Pi Coding Agent                   |
+|                       AI Client Application                     |
+|        (Pi Agent, Claude Desktop, Cursor, Antigravity IDE)      |
 |                                                                 |
-|   User Prompt: "Create a 3D model in Blender"                   |
+|   User Prompt: "Create a photorealistic crystal glass tumbler"  |
 |       |                                                         |
 |       v                                                         |
-|   [Gemini / LLM Agent] ----> Generates bpy Python Script        |
+|   [LLM / Reasoning Model]                                       |
 |       |                                                         |
 |       v                                                         |
-|   [send_to_blender.py] (Client CLI)                             |
+|   [MCP Tool Call: execute_blender_code(code)]                   |
++-------------------------------+---------------------------------+
+                                | (JSON-RPC over stdio)
+                                v
++-----------------------------------------------------------------+
+|               blender-desktop-bridge (mcp_server.py)            |
+|                                                                 |
+|   - Exposes Tools: execute_blender_code, get_blender_status,    |
+|                    pick_image_from_dialog, get_image_clipboard  |
+|   - Exposes Resources: blender://design-guidelines              |
+|   - Exposes Prompts: generate_3d_asset                          |
 +-------------------------------+---------------------------------+
                                 |
              +------------------+------------------+
              |                                     |
-   (Primary: HTTP REST POST)             (Fallback: File Watcher)
+   (Primary: HTTP REST POST)             (Fallback: Shared File Watcher)
    http://localhost:9876/execute         ~/.blender_bridge/task.py
              |                                     |
              v                                     v
@@ -39,151 +46,190 @@ Simply prompt the agent in your Pi terminal, such as *"Create a low-poly red spo
 |       v                                                         |
 |   bpy.app.timers (Main Thread Execution)                        |
 |       |                                                         |
-|       +---> Executes bpy script (Mesh, Materials, Modifiers)    |
-|       +---> Triggers 3D Viewport Redraw                         |
+|       +---> Executes bpy script (BMesh, Lathe, PBR Shaders)     |
+|       +---> Immediate 3D Viewport Redraw                        |
 |                                                                 |
-|   3D Asset appears live in your Blender Viewport!               |
+|   3D Asset renders instantly in the Blender 3D Viewport!        |
 +-----------------------------------------------------------------+
 ```
 
-### Key Advantages of the Dual-Transport Architecture:
-1. **HTTP REST (Fast):** Sends code directly over a local HTTP endpoint (`http://localhost:9876/execute`) for immediate response.
-2. **Shared File Watcher (Zero-Config Fallback):** Ideal for WSL2 to Windows Desktop workflows where firewalls or NAT often block network ports. The client writes to `~/.blender_bridge/task.py`, which Blender polls and executes every 100ms.
+### Key Technical Characteristics
+
+1. **Dual Transport Bridge:**
+   - **HTTP REST Endpoint (Primary):** Connects to `http://localhost:9876/execute` with automatic WSL2 host gateway IP resolution for near-zero latency execution.
+   - **Shared File Watcher (Zero-Configuration Fallback):** Reads `~/.blender_bridge/task.py` polled at 100ms intervals by Blender's modal timer loop, bypassing Windows/WSL firewall barriers.
+
+2. **Universal Compatibility:**
+   - Adheres strictly to the standard Model Context Protocol (MCP) JSON-RPC 2.0 specification over `stdio`.
+   - Zero external package dependencies in the MCP server: runs directly on standard Python 3.10+ without requiring `pip install`.
+
+3. **High-Fidelity 3D Pipeline:**
+   - Preserves advanced procedural material generation (Subsurface Scattering, transmission weight, index of refraction, micro-bump textures).
+   - Automated 2K PBR texture baking (Base Color, Roughness, Tangent Normal) and embedded `.glb` export via Cycles emission pass.
 
 ---
 
-## Features
+## MCP Tools and Capabilities
 
-- **Real-Time Viewport Sync:** Meshes, lights, and materials appear immediately without saving or reloading files.
-- **Image-to-3D Reference Modeling:** Easily insert images into the terminal via native Windows/Desktop File Picker Dialog (`pick_image.py --dialog`) or straight from your Clipboard (`pick_image.py --clipboard`, e.g. Win + Shift + S screenshot). Gemini analyzes geometry, proportions, and materials to recreate the 3D model in Blender.
-- **PBR Materials & Modifiers:** Automatically configures *Principled BSDF*, Base Color, Roughness, Metallic, Bevel, and Subdivision Surface modifiers.
-- **Automated 2K PBR Texture Baking & Self-Contained GLB Export:** Converts procedural shader networks into high-resolution 2K/4K bitmap textures (Base Color, Roughness, Tangent Normal Map) baked via Cycles and embeds them directly inside standalone `.glb` files (`bake_pbr_export_glb.py`).
-- **Default 2K Standard Resolution:** All viewport previews, OpenGL snapshots, and renders automatically execute in crisp 2K (2048x2048) resolution.
+The server exposes the following tools to connected AI models:
 
-- **Continuous Learning Memory:** Automatically records visual corrections, geometry rules, and shader fixes into the skill's persistent memory bank (`SKILL.md`) and recipe library, preventing recurring modeling errors across future sessions.
-- **Cross-Platform & WSL2 Ready:** Seamlessly works on native Linux, macOS, native Windows, and WSL2 talking to Windows desktop.
-- **Thread-Safe Execution:** Scripts run on Blender's main event loop using `bpy.app.timers` to eliminate context errors and crashes.
+| Tool Name | Parameters | Description |
+| :--- | :--- | :--- |
+| `execute_blender_code` | `code: string` | Executes Python (`bpy`) script directly inside active Blender desktop. Returns stdout, evaluation results, and error traces. |
+| `get_blender_status` | none | Checks whether the Blender desktop listener is active and responsive via HTTP or file watcher. |
+| `pick_image_from_dialog` | none | Launches a native operating system File Explorer dialog window allowing the user to select a 2D reference image. |
+| `get_image_from_clipboard` | none | Captures an image from the system clipboard (e.g., from Snipping Tool or screenshot) and saves it to a local temporary path. |
+| `get_design_guidelines` | none | Retrieves verified 3D asset architecture rules, lathe specifications, and PBR shader parameters from `design.md`. |
+
+The server also provides:
+- **Resource:** `blender://design-guidelines` providing full access to `design.md`.
+- **Prompt Template:** `generate_3d_asset` for consistent asset scaffolding.
 
 ---
 
-## Repository Structure
+## Directory Structure
 
-```bash
+```
 gemini-desktop-bridge-skill/
-├── README.md                      # Documentation and usage guide
-├── design.md                      # Living 3D asset design & specification log
-├── blender_bridge.py              # Main bridge script executed in Blender
-├── install.sh                     # One-click installer for Pi Agent
-├── blender_addon/
-│   └── blender_bridge.py          # Add-on formatted bridge script
-├── skill/
-│   ├── SKILL.md                   # Skill prompt and instructions for Pi Agent
-│   └── scripts/
-│       ├── send_to_blender.py     # Sender CLI tool (HTTP + File Watcher)
-│       ├── pick_image.py          # Native File Picker Dialog & Clipboard image tool
-│       └── bake_pbr_export_glb.py # Automated 2K PBR Texture Baking & GLB Exporter
-
-└── examples/
-    ├── 01_coffee_cup.py           # Example: Procedural ceramic coffee cup
-    ├── 02_lowpoly_car.py          # Example: Low-poly vehicle with wheels
-    ├── 03_export_glb.py           # Example: Glowing crystal + GLB export
-    └── recipes/
-        ├── 04_iced_latte_glass_lathe.py        # Verified Recipe: Seamless watertight glass & beverage lathe
-        ├── 05_thermoformed_pet_plastic_cup.py  # Verified Recipe: High-precision thermoformed disposable PET plastic cup
-        ├── 06_katakuchi_matcha_chawan.py       # Verified Recipe: Traditional Katakuchi Matcha Chawan with dual glaze & Kuro-ten spots
-        ├── 07_japanese_bamboo_chashaku.py      # Verified Recipe: Authentic Bamboo Chashaku with 2K PBR texture baking
-        ├── 08_gable_top_milk_carton.py         # Verified Recipe: Gable-Top Milk Carton with open pouring spout & 2K PBR bake
-        ├── 09_single_master_ice_cube.py        # Verified Recipe: Single Master Ice Cube optimized for Drag & Drop / Instancing
-        ├── 10_chashaku_matcha_scoop_pack.py    # Verified Recipe: Interactive Phase 1 Chashaku + Modular Matcha Powder Scoop Pack
-        ├── 11_chawan_matcha_powder_piles_pack.py # Verified Recipe: Interactive Phase 2 Chawan + Hidden Multi-Scoop Matcha Powder Piles
-        ├── 12_matcha_natsume_caddy.py          # Verified Recipe: Traditional Matcha Tea Caddy (Natsume) with Powder Bed & Label
-        └── 13_traditional_urushi_natsume_caddy.py # Verified Recipe: Authentic Black Urushi Lacquer Natsume with Gold Maki-e Crest
-
-
-
-
-
-
-
-
-
+|-- README.md                      # Comprehensive English documentation
+|-- design.md                      # Living 3D asset design log and specifications
+|-- mcp_server.py                  # Standalone MCP stdio server (JSON-RPC 2.0)
+|-- blender_bridge.py              # Main listener script executed inside Blender
+|-- install.sh                     # Automated installation script
+|-- blender_addon/
+|   \-- blender_bridge.py          # Blender add-on packaged listener
+|-- skill/
+|   |-- SKILL.md                   # Pi Agent Skill instructions and memory bank
+|   \-- scripts/
+|       |-- send_to_blender.py     # Dual-transport dispatch client
+|       |-- pick_image.py          # Native OS file dialog and clipboard picker
+|       \-- bake_pbr_export_glb.py # Automated 2K PBR texture baking and GLB exporter
+\-- examples/
+    |-- 01_coffee_cup.py           # Example: Procedural ceramic coffee cup
+    |-- 02_lowpoly_car.py          # Example: Low-poly vehicle
+    |-- 03_export_glb.py           # Example: Glowing crystal and GLB export
+    \-- recipes/                   # Production-verified parametric recipes
 ```
 
 ---
 
-## Installation & Setup
+## Setup and Installation
 
-### Step 1: Install the Skill into Pi Coding Agent
-Run the installation script in your terminal:
+### Step 1: Run Bridge Listener in Blender Desktop
 
-```bash
-git clone https://github.com/FidelCristopher/gemini-desktop-bridge-skill.git
-cd gemini-desktop-bridge-skill
-./install.sh
-```
-*This installs the skill permanently to `~/.pi/agent/skills/blender-bridge/` for all future sessions.*
-
----
-
-### Step 2: Run the Bridge in Blender Desktop
-1. Open **Blender** on your desktop.
-2. Switch to the **Scripting** tab at the top.
-3. Click **Open**, and select `blender_bridge.py` from this repository directory.
-4. Click **Run Script** (or press `Alt + P`).
-5. In the 3D Viewport (press `N` to open the sidebar), you will see the **Pi Bridge** panel displaying:
+1. Launch **Blender** on your computer.
+2. Navigate to the **Scripting** workspace tab at the top.
+3. Open `blender_addon/blender_bridge.py` from this repository.
+4. Click **Run Script** (shortcut: `Alt + P`).
+5. Open the 3D Viewport sidebar by pressing `N`. The **MCP Bridge** tab will indicate:
    ```
    Status: Active (Port 9876)
    ```
 
----
-
-### Step 3: Prompt the Pi Agent
-Interact naturally with the Pi Agent in your terminal. Whenever you want to generate a 3D asset, the agent will present 3 flexible input methods:
-1. **Pick Image from Local (File Explorer GUI):** Opens a native Windows dialog window to browse and click your image.
-2. **Specify Image File Path:** Provide a direct image path (e.g. `C:\Users\Pongo\Pictures\reference.png`).
-3. **Text Prompt Description:** Describe the 3D model directly using text.
-
-> **User:** *"I want to create a 3D model in Blender"*
-> 
-> **Pi Agent:**
-> *"How would you like to provide the reference?*
-> 1. Pick an image from Local (File Explorer dialog)
-> 2. Specify an image file path
-> 3. Describe using a text prompt"
-> 
-> **Result:** The 3D model appears instantly in your Blender viewport and logs its specs to `design.md`!
+*Tip: You can also install `blender_bridge.py` as a permanent Blender Add-on via `Edit > Preferences > Add-ons > Install`.*
 
 ---
 
-## Example Prompts
+### Step 2: Configure Your MCP Client
 
-- *"Create a 3D model in Blender from an image"* -> The agent offers a native File Picker dialog or grabs from your clipboard.
-- *"Create a ceramic coffee cup with steam and a handle"*
-- *"Build a low-poly sports car with silver rims and a metallic red body"*
-- *"Generate a low-poly pine tree with an icosphere foliage canopy"*
-- *"Clear the scene and create a frosted pink donut with sprinkles"*
-- *"Model a sci-fi energy blade with neon blue emission and export it to a .glb file"*
+#### For Pi Agent
+Run the installation script:
+```bash
+./install.sh
+```
+Or register manually in `~/.pi/agent/mcp.json`:
+```json
+{
+  "mcpServers": {
+    "blender-bridge": {
+      "command": "python3",
+      "args": [
+        "/mnt/c/Users/Pongo/gemini-desktop-bridge-skill/mcp_server.py"
+      ],
+      "exposure": "direct",
+      "description": "Blender Desktop Bridge MCP server for controlling Blender and generating 3D assets"
+    }
+  }
+}
+```
+
+Verify connection:
+```bash
+pi mcp list
+```
+
+#### For Claude Desktop
+Add to your `claude_desktop_config.json`:
+```json
+{
+  "mcpServers": {
+    "blender-bridge": {
+      "command": "python3",
+      "args": [
+        "C:\\Users\\Pongo\\gemini-desktop-bridge-skill\\mcp_server.py"
+      ]
+    }
+  }
+}
+```
+
+#### For Cursor / Antigravity IDE / VS Code
+Add to your MCP configuration settings:
+```json
+{
+  "mcpServers": {
+    "blender-bridge": {
+      "command": "python3",
+      "args": [
+        "/mnt/c/Users/Pongo/gemini-desktop-bridge-skill/mcp_server.py"
+      ]
+    }
+  }
+}
+```
 
 ---
 
-## Manual CLI Testing
+## Usage Workflow
 
-You can test the connection manually without prompting the agent:
+When prompting your AI assistant:
+
+1. **Provide Reference via Native Dialog:**
+   Ask the assistant to pick an image:
+   - *"Let me pick an image from my computer to model in Blender"*
+   - The assistant invokes `pick_image_from_dialog`, opening a native File Explorer window for selection.
+
+2. **Provide Reference via Clipboard:**
+   - Take a screenshot using Snipping Tool (`Win + Shift + S`).
+   - Tell the assistant: *"Model the 3D object from my clipboard screenshot in Blender"*.
+   - The assistant calls `get_image_from_clipboard` to read the image data.
+
+3. **Natural Language Text Modeling:**
+   - *"Create a stylized low-poly sports car in Blender"*
+   - *"Create a photorealistic iced matcha latte in a crystal glass tumbler"*
+   - The assistant generates Python `bpy` commands and calls `execute_blender_code`.
+   - The asset appears live in your Blender 3D Viewport.
+
+---
+
+## Manual Verification via CLI
+
+You can verify communication without an AI client:
 
 ```bash
-# Check Blender connection status
+# Check listener status
 python3 skill/scripts/send_to_blender.py --status
 
-# Send the procedural coffee cup example
+# Execute procedural coffee cup recipe
 python3 skill/scripts/send_to_blender.py --file examples/01_coffee_cup.py
 
-# Send the low-poly car example
+# Execute low-poly car recipe
 python3 skill/scripts/send_to_blender.py --file examples/02_lowpoly_car.py
 ```
 
 ---
 
-## Contributions
+## Author and License
 
-Created by [Fidel Cristopher](https://github.com/FidelCristopher).
-Issues, feature requests, and pull requests are welcome!
+Developed by Fidel Cristopher.
+Open-source under standard permissive terms. Contributions and extensions are welcome.

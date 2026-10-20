@@ -8,7 +8,7 @@ This living document tracks every 3D asset designed, generated, and refined usin
 
 - **Date:** 2026-10-09
 - **Category:** Organic Food / Fruit Prop
-- **Source:** Text Prompt ("3d asset strawberry jepang berwarna merah")
+- **Source:** Text Prompt ("red japanese strawberry 3d asset")
 
 ### 1. Geometric Structure
 - **Main Body (`JapaneseStrawberry_Body`):**

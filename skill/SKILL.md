@@ -19,10 +19,10 @@ Whenever this skill is triggered, invoked (e.g. via `/skill blender-bridge`, `/s
    - Every single time `/skill` is invoked, treat it as a brand-new, fresh interaction from scratch.
    - Your VERY FIRST AND ONLY response to the user must be to STOP immediately and present the 3 input options:
 
-   "Halo! Gemini Desktop Blender Bridge aktif. Bagaimana Anda ingin memberikan referensi untuk model 3D baru?
-   1. **Pilih Gambar dari Komputer (File Explorer)**: Membuka jendela dialog untuk memilih gambar referensi.
-   2. **Ketik Path File Gambar**: Masukkan path file gambar secara langsung (misal: `C:\Users\...\gambar.png`).
-   3. **Deskripsi Teks / Prompt**: Jelaskan langsung objek 3D apa yang ingin Anda buat."
+   "Hello! Blender Desktop Bridge is active. How would you like to provide the reference for the new 3D model?
+   1. **Pick Image from Computer (File Explorer)**: Opens a dialog window to select a reference image.
+   2. **Enter Image File Path**: Enter the direct file path to an image (e.g., `C:\Users\...\image.png`).
+   3. **Text Description / Prompt**: Describe directly what 3D object you would like to create."
 
 3. **WAIT FOR EXPLICIT USER RESPONSE:**
    - You MUST wait for the user to choose option 1, 2, or 3 before generating any code, writing any file, or touching Blender.
@@ -299,18 +299,5 @@ This ensures that the agent permanently learns from every mistake across all fut
      - Bake tangent-space normal maps using `bake_type = 'NORMAL'` with `normal_space = 'TANGENT'`.
   3. **PBR Export Shader Rewiring:** Replace the procedural node tree with standard `ShaderNodeTexImage` nodes piped into Principled BSDF sockets (`Base Color` sRGB, `Roughness` Non-Color, and `Normal Map` Non-Color).
   4. **Self-Contained GLB Export:** Call `bpy.ops.export_scene.gltf` with `export_materials = 'EXPORT'`, `export_image_format = 'AUTO'`, and `export_apply = True`. This guarantees that all 2K/4K PBR textures are packed and embedded directly inside the binary `.glb` container for universal web, game engine, and AR compatibility.
-
-
-### 15. glTF / GLB Export Pipeline & Procedural Shader Texture Baking
-- **Problem:** Exporting procedural Blender shader materials directly to `.glb` / `.gltf` strips all procedural mathematical nodes (`Noise`, `Voronoi`, `Mix`, `Attribute`, `ColorRamp`), resulting in a blank/empty material (`textures: []`) because runtime glTF 2.0 specifications strictly mandate bitmap image textures connected to Principled BSDF.
-- **Rule:**
-  1. **UV Unwrap Verification:** Verify or generate clean, non-overlapping UV coordinates (`bpy.ops.uv.smart_project(island_margin=0.01)`) prior to baking.
-  2. **High-Speed Zero-Noise Emission Baking:**
-     - To bake pure unshaded Base Color (Albedo) and scalar Roughness maps without stochastic noise or long render times, route the evaluated color/scalar output into a temporary `ShaderNodeEmission` shader and bake using Cycles `bake_type = 'EMIT'` with `samples = 1`.
-     - Bake tangent-space normal maps using `bake_type = 'NORMAL'` with `normal_space = 'TANGENT'`.
-  3. **PBR Export Shader Rewiring:** Replace the procedural node tree with standard `ShaderNodeTexImage` nodes piped into Principled BSDF sockets (`Base Color` sRGB, `Roughness` Non-Color, and `Normal Map` Non-Color).
-  4. **Self-Contained GLB Export:** Call `bpy.ops.export_scene.gltf` with `export_materials = 'EXPORT'`, `export_image_format = 'AUTO'`, and `export_apply = True`. This guarantees that all 2K/4K PBR textures are packed and embedded directly inside the binary `.glb` container for universal web, game engine, and AR compatibility.
-
-
 
 
