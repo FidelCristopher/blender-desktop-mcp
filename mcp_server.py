@@ -38,16 +38,57 @@ SERVER_VERSION = "1.0.0"
 
 DESIGN_DOC_PATH = CURRENT_DIR / "design.md"
 
+SYSTEM_INSTRUCTIONS = """
+MANDATORY 3D MODELING & SHADING QUALITY DIRECTIVES (PRODUCTION STANDARD):
+
+Whenever creating or modifying 3D assets in Blender via execute_blender_code:
+
+1. MANDATORY 2K STANDARD RESOLUTION:
+   Always configure scene rendering to 2K (2048 x 2048):
+   bpy.context.scene.render.resolution_x = 2048
+   bpy.context.scene.render.resolution_y = 2048
+
+2. TOPOLOGY & WATERTIGHT GEOMETRY:
+   - All meshes must be 100% watertight, manifold geometry without open unmeshed base holes or inverted normals.
+   - For rotational objects (cups, glasses, bowls, vases, bottles), ALWAYS construct a continuous lathe profile with uniform realistic wall thickness (e.g. 2-5mm) and a solid base bottom floor.
+   - For beverage liquids in containers: liquid geometry MUST start directly on the inner glass floor and hug the inner container wall coordinates exactly (zero air gaps, zero penetration).
+
+3. MODIFIERS & SMOOTH SHADING:
+   - Never leave primitive polygonal facets visible. Always call bpy.ops.object.shade_smooth() or apply smooth shading on polygons.
+   - Add a Bevel modifier (width: 0.015 - 0.04, segments: 3, limit_method='ANGLE') to catch physical specular edge highlights.
+   - Add a Subdivision Surface modifier (levels: 2, render_levels: 2) on organic, curved, and ceramic surfaces.
+
+4. PHOTOREALISTIC PBR MATERIALS:
+   - Always construct materials using 'Principled BSDF' ('ShaderNodeBsdfPrincipled'). Never use flat, single-color unshaded diffuse shaders.
+   - Glass & Optics: Transmission Weight = 1.0, Roughness = 0.02 - 0.04, IOR = 1.50, Alpha = 0.20, blend_method = 'HASHED' or 'BLEND', with subtle procedural condensation micro-bump (Scale 35.0, Strength 0.035).
+   - Milky / Organic Liquids: Subsurface Scattering Weight = 0.35 - 0.45, Radius = (0.2, 0.5, 0.1), Roughness = 0.18.
+   - Velvety Cream & Foam: Roughness = 0.85 - 0.90, Specular = 0.15, micro-noise Bump normal (Scale 50.0, Strength 0.25).
+   - Ceramics & Pottery: Multi-scale Voronoi micro-iron flecks (Kuro-ten), dual-glaze vertex color blend, and toasted rim gradient.
+   - Metals: Metallic = 1.0, Roughness = 0.15 - 0.35, subtle micro-scratch bump.
+
+5. STUDIO 3-POINT LIGHTING:
+   - Always illuminate assets using a professional 3-point studio lighting rig:
+     - Key Light: Area or Sun light, warm/neutral (energy 100-300W), 45-degree angle.
+     - Fill Light: Soft cool tone, lower intensity (energy 30-80W), opposite side.
+     - Rim / Back Light: High intensity backlight behind the object to create edge separation and highlights.
+
+6. VIEWPORT THEME PRESERVATION:
+   - Maintain space.shading.background_type = 'THEME' (neutral dark-grey background). Never set a blinding 100% white environment background.
+
+7. RECIPE LEVERAGE:
+   - Before writing complex code from scratch, ALWAYS check if a relevant verified recipe exists by invoking 'search_recipe_library'. Reusing verified mathematical lathe profiles and PBR shader node configurations guarantees photorealistic results.
+"""
+
 TOOLS = [
     {
         "name": "execute_blender_code",
-        "description": "Execute Python (bpy) script directly in the active Blender desktop session. Returns execution output or error trace.",
+        "description": "Execute Python (bpy) script directly in the active Blender desktop session to generate or update 3D assets. MUST follow the mandatory 2K PBR quality guidelines: watertight manifold geometry, Bevel (segments 3) and Subsurf modifiers, Principled BSDF with realistic Roughness/Transmission/SSS, 3-point studio lighting, and 2048x2048 resolution.",
         "inputSchema": {
             "type": "object",
             "properties": {
                 "code": {
                     "type": "string",
-                    "description": "Valid Blender Python (bpy) code to execute in Blender."
+                    "description": "Complete, standalone Blender Python (bpy) code adhering to the mandatory 2K PBR production quality standards."
                 }
             },
             "required": ["code"]
@@ -512,7 +553,8 @@ def run_stdio_server():
                     "serverInfo": {
                         "name": SERVER_NAME,
                         "version": SERVER_VERSION
-                    }
+                    },
+                    "instructions": SYSTEM_INSTRUCTIONS.strip()
                 }
             })
         elif method == "ping":
