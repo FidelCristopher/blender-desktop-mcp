@@ -69,7 +69,20 @@ The server allows AI coding agents and desktop assistants to inspect the Blender
 
 ---
 
-## MCP Tools and Capabilities
+## Key Features
+
+- Real-Time 3D Viewport Sync: Executes generated Python scripts safely on Blender's main thread via bpy.app.timers, providing instantaneous 3D viewport redraws without file reloading.
+- Image-to-3D Reference Modeling: Launch a native operating system File Explorer dialog window with a single prompt, allowing point-and-click selection of 2D reference images.
+- Clipboard Screenshot-to-3D: Grab screenshots directly from the OS clipboard (e.g., Windows Snipping Tool via Win + Shift + S) for zero-friction reference modeling.
+- Continuous Learning & Smart Recipe Search: Query production-tested 3D recipes via keyword matching. If an asset is completely new, an automated 3-Tier Fallback supplies modular component blocks and universal quality guidelines.
+- Self-Expanding Asset Archive: Automatically logs newly verified 3D assets into categorized Python recipe files and updates design.md, making the MCP smarter with every session.
+- Advanced PBR Shading & Optics: Production setups for Principled BSDF shaders including Subsurface Scattering (milky liquids, fruit skin), real-time optical glass refraction, and procedural micro-bump textures.
+- Automated 2K PBR Texture Baking: Automatically unwraps UVs, bakes procedural shader networks into standalone 2K bitmap textures (Albedo, Roughness, Normal) via Cycles, and exports self-contained .glb binary files.
+- Universal Multi-Model Support: Works out of the box with any MCP-compliant environment including Claude Desktop, Cursor, Pi Agent, and Antigravity IDE.
+
+---
+
+## MCP Tools Reference
 
 The server exposes the following tools to connected AI models:
 
