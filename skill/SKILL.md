@@ -68,9 +68,9 @@ Whenever the user invokes the skill or asks to generate 3D assets in Blender:
 
 6. **MANDATORY: Update `design.md` & `README.md` in Official Repository:**
    - Every time a 3D asset is generated, significantly refined, or modified, the agent **MUST** automatically update the documentation directly within the official repository:
-     - **Target Repo (Windows):** `C:\Users\Pongo\gemini-desktop-bridge-skill\`
-     - **Target Repo (WSL):** `/mnt/c/Users/Pongo/gemini-desktop-bridge-skill/` (and mirror to `~/gemini-desktop-bridge-skill/`)
-     - **GitHub Remote:** `https://github.com/FidelCristopher/gemini-desktop-bridge-skill`
+     - **Target Repo (Windows):** `C:\Users\Pongo\blender-desktop-mcp\`
+     - **Target Repo (WSL):** `/mnt/c/Users/Pongo/blender-desktop-mcp/` (and mirror to `~/blender-desktop-mcp/`)
+     - **GitHub Remote:** `https://github.com/FidelCristopher/blender-desktop-mcp`
    - **Updating `design.md`:**
      - Append the complete architectural entry for the asset:
        - Asset Name / Title & Timestamp

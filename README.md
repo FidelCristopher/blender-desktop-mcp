@@ -105,7 +105,7 @@ The server also provides:
 ## Directory Structure
 
 ```
-gemini-desktop-bridge-skill/
+blender-desktop-mcp/
 |-- README.md                      # Comprehensive English documentation
 |-- design.md                      # Living 3D asset design log and specifications
 |-- mcp_server.py                  # Standalone MCP stdio server (JSON-RPC 2.0)
@@ -159,7 +159,7 @@ Or register manually in `~/.pi/agent/mcp.json`:
     "blender-bridge": {
       "command": "python3",
       "args": [
-        "/mnt/c/Users/Pongo/gemini-desktop-bridge-skill/mcp_server.py"
+        "/mnt/c/Users/Pongo/blender-desktop-mcp/mcp_server.py"
       ],
       "exposure": "direct",
       "description": "Blender Desktop Bridge MCP server for controlling Blender and generating 3D assets"
@@ -181,7 +181,7 @@ Add to your `claude_desktop_config.json`:
     "blender-bridge": {
       "command": "python3",
       "args": [
-        "C:\\Users\\Pongo\\gemini-desktop-bridge-skill\\mcp_server.py"
+        "C:\\Users\\Pongo\\blender-desktop-mcp\\mcp_server.py"
       ]
     }
   }
@@ -196,7 +196,7 @@ Add to your MCP configuration settings:
     "blender-bridge": {
       "command": "python3",
       "args": [
-        "/mnt/c/Users/Pongo/gemini-desktop-bridge-skill/mcp_server.py"
+        "/mnt/c/Users/Pongo/blender-desktop-mcp/mcp_server.py"
       ]
     }
   }
