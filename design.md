@@ -564,3 +564,34 @@ To ensure 100% non-intrusive, crash-free, and restart-free execution during asse
 - **Output File:** `C:\Users\Pongo\Downloads\3d-asset\furui.glb` ($269\text{ KB}$).
 - **Showcase Replica:** `C:\Users\Pongo\matcha-showcase\assets\models\furui.glb`.
 - **Verified Recipe:** `examples/recipes/19_artisanal_japanese_matcha_sifter_furui.py`.
+
+
+---
+
+## Asset Log #14: Barista Stainless Steel Milk Frothing Pitcher / Steaming Jug (350ml / 12oz)
+**Timestamp:** 2026-10-21 00:38:00  
+**Category:** Modern Barista Equipment & Milk Pouring Utensil  
+**Source:** Reference Image (`/mnt/c/Users/Pongo/Downloads/milk-frothing-pitcher.jpeg` / `C:\Users\Pongo\Downloads\milk-frothing-pitcher.jpeg`)  
+**Asset Name in Scene:** `Milk_Frothing_Pitcher`
+
+### 1. Geometric Architecture & Components
+- **Tapered Cylinder Jug Body:**
+  - Standard 350ml (12oz) cafe proportions: Base Diameter $7.6\text{ cm}$ ($R = 0.038\text{ m}$), Top Rim Diameter $6.8\text{ cm}$ ($R = 0.034\text{ m}$), Height $9.2\text{ cm}$ ($Z = 0.092\text{ m}$).
+  - Recessed bottom base foot ($1.5\text{ mm}$ recess) with smooth rounded bottom corner edge.
+  - Uniform $1.1\text{ mm}$ food-grade sheet metal thickness (`Solidify`) with rounded rolled lip rim.
+- **Precision V-Shaped Pouring Spout (Latte Art Spout):**
+  - Flared front lip centered at $-X$ axis ($Z \in [0.052, 0.092\text{ m}]$) with $+13.5\text{ mm}$ radial flare and vertical stamped crease trough.
+- **Welded Flat-Ribbon Steel Loop Handle:**
+  - Flat steel strip ($1.35\text{ cm}$ width, $1.6\text{ mm}$ thickness) with beveled comfort edges, spot-welded at top rim ($Z = 0.078\text{ m}$) and lower body ($Z = 0.024\text{ m}$).
+
+### 2. Shader & PBR Material Specification
+- **Material Name:** `M_Brushed_Barista_Steel`
+- **Brushed Stainless Steel PBR:**
+  - Base Color: `(0.89, 0.90, 0.91, 1.0)`, $\text{Metallic} = 0.98$, $\text{Roughness} = 0.16$ (satin polished chrome sheen).
+  - Vertical Anisotropic Brushed Grain: Procedural noise stretched along $Z$ ($Scale: (4.0, 4.0, 320.0)$) plugged into micro-bump ($Strength: 0.028$).
+  - High specular reflection catching studio vertical highlights.
+
+### 3. Master GLB Container
+- **Output File:** `C:\Users\Pongo\Downloads\3d-asset\milk-pitcher.glb` ($1.27\text{ MB}$).
+- **Showcase Replica:** `C:\Users\Pongo\matcha-showcase\assets\models\milk-pitcher.glb`.
+- **Verified Recipe:** `examples/recipes/20_barista_milk_frothing_pitcher.py`.
